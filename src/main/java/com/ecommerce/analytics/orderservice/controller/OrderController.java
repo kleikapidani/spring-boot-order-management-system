@@ -2,6 +2,8 @@ package com.ecommerce.analytics.orderservice.controller;
 
 import com.ecommerce.analytics.orderservice.dto.OrderRequest;
 import com.ecommerce.analytics.orderservice.dto.OrderResponse;
+import com.ecommerce.analytics.orderservice.dto.OrderSearchCriteria;
+import com.ecommerce.analytics.orderservice.dto.OrderStatsResponse;
 import com.ecommerce.analytics.orderservice.service.OrderService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -78,6 +80,62 @@ public class OrderController {
             @Valid @RequestBody OrderRequest orderRequest
     ) {
         OrderResponse orderResponse = orderService.updateOrder(id, orderRequest);
+        return ResponseEntity.ok(orderResponse);
+    }
+
+    /**
+     * Delete order
+     * DELETE /api/v1/orders/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable @Min(1) Long id) {
+        orderService.deleteOrder(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Search orders with multiple criteria
+     * GET /api/v1/orders/search?customerName=John&status=PENDING&minAmount=100
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<OrderResponse>> searchOrder(
+            @Valid @RequestBody OrderSearchCriteria orderSearchCriteria,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ) {
+
+        List<OrderResponse> orderResponses = orderService.searchOrders(orderSearchCriteria,
+                page,
+                size,
+                sortBy,
+                sortDirection).getContent();
+
+        return ResponseEntity.ok(orderResponses);
+    }
+
+    /**
+     * Get order statistics
+     * GET /api/v1/orders/stats
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<OrderStatsResponse> getOrderStats() {
+
+        OrderStatsResponse orderStatsResponse = orderService.getOrderStatistics();
+        return ResponseEntity.ok(orderStatsResponse);
+    }
+
+    /**
+     * Update order status
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestParam String status
+    ) {
+
+        OrderResponse orderResponse = orderService.updateOrderStatus(id, status);
         return ResponseEntity.ok(orderResponse);
     }
 }

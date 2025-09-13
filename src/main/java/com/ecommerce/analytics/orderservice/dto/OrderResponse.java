@@ -23,5 +23,4 @@ public class OrderResponse {
     private String status;
     private String notes;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
